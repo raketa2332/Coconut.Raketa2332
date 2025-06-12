@@ -1,13 +1,15 @@
+
+import pytest
 import requests
+from faker import Faker
 
 from api.api_manager import ApiManager
-from constant import BASE_URL, HEADERS, LOGIN_ENDPOINT, REGISTER_ENDPOINT
-import pytest
-from faker import Faker
-from utils.data_generator import DataGenerator
+from constant import BASE_URL, HEADERS, LOGIN_ENDPOINT, REGISTER_ENDPOINT, SUPER_ADMIN_LOGIN, SUPER_ADMIN_PASSWORD
 from custom_requester.custom_requester import CustomRequester
+from utils.data_generator import DataGenerator
 
 faker = Faker()
+
 
 @pytest.fixture(scope='function')
 def test_user():
@@ -23,6 +25,7 @@ def test_user():
         "roles": ["USER"]
     }
 
+
 @pytest.fixture(scope='function')
 def registered_user(requester, test_user):
     response = requester.send_request(
@@ -37,12 +40,13 @@ def registered_user(requester, test_user):
     return register_user
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture()
 def requester():
     session = requests.Session()
     return CustomRequester(session=session, base_url=BASE_URL)
 
-@pytest.fixture(scope='function')
+
+@pytest.fixture()
 def auth_session(test_user):
     register_url = f"{BASE_URL}{REGISTER_ENDPOINT}"
     response = requests.post(url=register_url, json=test_user, headers=HEADERS)
@@ -53,7 +57,7 @@ def auth_session(test_user):
         "email": test_user['email'],
         "password": test_user['password']
     }
-    response = requests.post(url=login_url,json=login_data, headers=HEADERS)
+    response = requests.post(url=login_url, json=login_data, headers=HEADERS)
     assert response.status_code == 200, "Ошибка авторизации"
 
     token = response.json().get("accessToken")
@@ -64,13 +68,22 @@ def auth_session(test_user):
     session.headers.update({"Authorization": f"Bearer {token}"})
     return session
 
-@pytest.fixture(scope='session')
+
+@pytest.fixture(scope="module")
 def session():
     http_session = requests.Session()
     yield http_session
     http_session.close()
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
+def test_genre():
+    return {"name": DataGenerator.generate_random_genre()}
+
+@pytest.fixture(scope="module")
 def api_manager(session):
     return ApiManager(session)
 
+@pytest.fixture(scope="module")
+def admin_api_manager(api_manager):
+    api_manager.auth_api.authenticate((SUPER_ADMIN_LOGIN, SUPER_ADMIN_PASSWORD))
+    return api_manager

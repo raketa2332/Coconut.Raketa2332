@@ -2,9 +2,11 @@ import random
 import string
 
 from faker import Faker
-faker = Faker()
 
-class DataGenerator():
+faker = Faker('ru_RU')
+
+
+class DataGenerator:
 
     @staticmethod
     def generate_random_email():
@@ -17,12 +19,11 @@ class DataGenerator():
 
     @staticmethod
     def generate_random_password():
-        """
-       Генерация пароля, соответствующего требованиям:
-       - Минимум 1 буква.
-       - Минимум 1 цифра.
-       - Допустимые символы.
-       - Длина от 8 до 20 символов.
+        """Генерация пароля, соответствующего требованиям:
+        - Минимум 1 буква.
+        - Минимум 1 цифра.
+        - Допустимые символы.
+        - Длина от 8 до 20 символов.
         """
         # Гарантируем наличие хотя бы одной буквы и цифры
         letters = random.choice(string.ascii_letters)
@@ -31,7 +32,7 @@ class DataGenerator():
         # Дополняем пароль случайными символами из допустимого набора
         special_chars = "?@#$%^&*|:"
         all_chars = string.ascii_letters + string.digits + special_chars
-        remaining_length = random.randint(6,18)
+        remaining_length = random.randint(6, 18)
         remaining_chars = ''.join(random.choices(all_chars, k=remaining_length))
 
         password = list(letters + digits + remaining_chars)
@@ -39,3 +40,38 @@ class DataGenerator():
 
         return ''.join(password)
 
+    @staticmethod
+    def generate_random_movie_title():
+        adjectives = ["Последний", "Тёмный", "Секретный", "Затерянный", "Огненный", "Холодный", "Железный", "Безмолвный"]
+        nouns = ["Рыцарь", "Город", "Взрыв", "Лабиринт", "Код", "Контракт", "Шанс", "Сигнал"]
+
+        adjective = random.choice(adjectives)
+        noun = random.choice(nouns)
+        suffix = faker.word().capitalize()
+
+        return f"{adjective} {noun}: {suffix}"
+
+    @staticmethod
+    def generate_random_movie_description():
+        hero = faker.first_name()
+        profession = random.choice([
+            "детектив", "хакер", "учёный", "солдат", "пилот", "беглец", "программист", "журналист"
+        ])
+        goal = random.choice([
+            "раскрыть заговор", "спасти мир", "найти пропавшего брата", "избежать катастрофы",
+            "остановить вирус", "взломать систему", "найти древний артефакт", "изменить прошлое"
+        ])
+        setting = random.choice([
+            "в разрушенном будущем", "в параллельной реальности", "во время мировой войны",
+            "на далёкой планете", "в мегаполисе будущего", "в виртуальном мире", "в постапокалипсисе"
+        ])
+
+        return f"{hero}, {profession}, должен {goal} {setting}."
+
+    @staticmethod
+    def generate_random_genre():
+        genres = [
+            "драма", "комедия", "боевик", "триллер", "ужасы", "фантастика",
+            "фэнтези", "детектив", "приключения", "мелодрама", "анимация", "документальный"
+        ]
+        return random.choice(genres) + " " + faker.word()

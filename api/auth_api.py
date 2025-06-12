@@ -1,6 +1,6 @@
-from constant import REGISTER_ENDPOINT, LOGIN_ENDPOINT
+from constant import BASE_URL, LOGIN_ENDPOINT, REGISTER_ENDPOINT
 from custom_requester.custom_requester import CustomRequester
-from constant import BASE_URL
+
 
 class AuthAPI(CustomRequester):
 
@@ -15,7 +15,7 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
-    def login_user(self, login_data, expected_status=201):
+    def login_user(self, login_data, expected_status=200):
         return self.send_request(
             method="POST",
             endpoint=LOGIN_ENDPOINT,

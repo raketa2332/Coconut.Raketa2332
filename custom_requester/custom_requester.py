@@ -1,12 +1,12 @@
 import json
-
-import requests
 import logging
 import os
+
+
 class CustomRequester:
+    """Кастомный реквестер для стандартизации и упрощения HTTP-запросов.
     """
-    Кастомный реквестер для стандартизации и упрощения HTTP-запросов.
-    """
+
     base_headers = {
         "Content-Type": "application/json",
         "Accept": "application/json"
@@ -44,7 +44,7 @@ class CustomRequester:
             RED = '\033[31m'
             RESET = '\033[0m'
             headers = "\\\n".join([f"-H'{header}: {value}'" for header, value in request.headers.items()])
-            full_test_name = f"pytest {os.environ.get('PYTEST_CURRENT_TEST','').replace('(call)','')}"
+            full_test_name = f"pytest {os.environ.get('PYTEST_CURRENT_TEST', '').replace('(call)', '')}"
 
             body = ""
             if hasattr(request, 'body') and request.body is not None:
@@ -52,7 +52,7 @@ class CustomRequester:
                     body = request.body.decode('utf-8')
                 body = f"-d '{body}' \n" if body != '{}' else ''
 
-            #Логируем запрос
+            # Логируем запрос
             self.logger.info(f"\n{'=' * 40} REQUEST {'=' * 40}")
             self.logger.info(
                 f"{GREEN}{full_test_name}{RESET}\n"
@@ -60,18 +60,18 @@ class CustomRequester:
                 f"{headers} \\\n"                f"{body}"
             )
 
-            #Обрабатываем ответ
+            # Обрабатываем ответ
             response_status = response.status_code
             is_success = response.ok
             response_data = response.text
 
-            #Попытка форматировать JSON
+            # Попытка форматировать JSON
             try:
                 response_data = json.dump(json.load(response.text), indent=4, ensure_ascii=False)
             except json.JSONDecodeError:
-                pass #Оставляем текст, если это не JSON
+                pass  # Оставляем текст, если это не JSON
 
-            #Логируем ответ
+            # Логируем ответ
             self.logger.info(f"\n{'=' * 40} RESPONSE {'=' * 40}")
             if not is_success:
                 self.logger.info(

@@ -1,7 +1,5 @@
-import requests
-
-from custom_requester.custom_requester import CustomRequester
 from constant import BASE_URL
+from custom_requester.custom_requester import CustomRequester
 
 
 class UserAPI(CustomRequester):
@@ -15,7 +13,7 @@ class UserAPI(CustomRequester):
             expected_status=expected_status
         )
 
-    def delete_user(self,user_id,expected_status=204):
+    def delete_user(self, user_id, expected_status=204):
         return self.send_request(
             method="DELETE",
             endpoint=f"/user/{user_id}",
