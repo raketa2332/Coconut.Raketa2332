@@ -16,16 +16,18 @@ class TestAuthAPI:
 
     def test_register_and_login_user(self, api_manager: ApiManager, registered_user):
         """Тест на регистрацию и авторизацию пользователя"""
-        login_data = {"email": registered_user["email"], "password": registered_user["password"]}
-        response = api_manager.auth_api.login_user(login_data=login_data, expected_status=201)
+        login_data = {
+            "email": registered_user["email"],
+            "password": registered_user["password"]
+        }
+        response = api_manager.auth_api.login_user(login_data=login_data)
         response_data = response.json()
 
         assert "accessToken" in response_data, "Токен доступа отсутствует в ответе"
         assert response_data["user"]["email"] == registered_user["email"], "Email не совпадает"
 
-    @pytest.mark.xfail(reason="Знаем о том, что не тот статус код")
     def test_auth_user_with_invalid_creds(self, api_manager: ApiManager, registered_user):
-        # Попытка логина с невалидным паролем
+
         login_data_with_invalid_passwd = {
             "email": registered_user["email"],
             "password": DataGenerator.generate_random_password(),

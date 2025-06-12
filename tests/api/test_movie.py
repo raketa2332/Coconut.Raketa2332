@@ -11,7 +11,7 @@ class TestGenreAPI:
         response_data = response.json()
         assert response_data.get("id"), "id не может быть None или отсутствовать вовсе"
         genre_id = response_data["id"]
-        assert response_data.get("name") == test_genre["name"],\
+        assert response_data.get("name") == test_genre["name"]
 
         response = admin_api_manager.movie_api.get_genre(genre_id)
         response_data = response.json()
@@ -33,13 +33,13 @@ class TestGenreAPI:
         assert response_data.get("error") == "Not Found"
         assert response_data.get("statusCode") == 404
 
-    def test_get_genres_list(self, admin_api_manager):
+    def test_get_genres_list(self, admin_api_manager: ApiManager):
         response = admin_api_manager.movie_api.get_genres_list()
         response_data = response.json()
         assert "id" in random.choice(response_data), "Отсутствует id жанра"
         assert "name" in random.choice(response_data), "Отсутствует название жанра"
 
-    def test_cant_create_genre_with_empty_name(self, admin_api_manager):
+    def test_cant_create_genre_with_empty_name(self, admin_api_manager: ApiManager):
         response = admin_api_manager.movie_api.create_genre({"name": " "}, expected_status=400)
         response_data = response.json()
 
@@ -49,7 +49,7 @@ class TestGenreAPI:
         assert response_data.get("error") == "Bad Request"
         assert response_data.get("statusCode") == 400
 
-    def test_cant_create_genre_with_name_less_than_3_characters(self, admin_api_manager):
+    def test_cant_create_genre_with_name_less_than_3_characters(self, admin_api_manager: ApiManager):
         response = admin_api_manager.movie_api.create_genre({"name": "ff"}, expected_status=400)
         response_data = response.json()
 
@@ -58,7 +58,7 @@ class TestGenreAPI:
         assert response_data.get("error") == "Bad Request"
         assert response_data.get("statusCode") == 400
 
-    def test_cant_create_genre_if_name_already_exists(self, admin_api_manager, test_genre):
+    def test_cant_create_genre_if_name_already_exists(self, admin_api_manager: ApiManager, test_genre):
         response = admin_api_manager.movie_api.create_genre(test_genre)
         response_data = response.json()
         assert response_data.get("id"), "id не может быть None или отсутствовать"
@@ -72,7 +72,7 @@ class TestGenreAPI:
 
 
 class TestMovieAPI:
-    def test_create_movie(self, admin_api_manager, test_movie_data):
+    def test_create_movie(self, admin_api_manager: ApiManager, test_movie_data):
         response = admin_api_manager.movie_api.create_movie(test_movie_data)
         response_data = response.json()
 
@@ -98,7 +98,7 @@ class TestMovieAPI:
         assert response_data.get("name") == test_movie_data["name"]
         assert response_data.get("genreId") == test_movie_data["genreId"]
 
-    def test_edit_movie(self, admin_api_manager, test_movie_data, random_genre):
+    def test_edit_movie(self, admin_api_manager: ApiManager, test_movie_data, random_genre):
         response = admin_api_manager.movie_api.create_movie(test_movie_data)
         response_data = response.json()
         assert response_data.get("id"), "id не может быть None или отсутствовать"
@@ -122,7 +122,7 @@ class TestMovieAPI:
         assert new_response_data.get("location") == response_data.get("location")
         assert new_response_data.get("published") == response_data.get("published")
 
-    def test_get_movies_list(self, admin_api_manager):
+    def test_get_movies_list(self, admin_api_manager: ApiManager):
         response = admin_api_manager.movie_api.get_movie_list()
         response_data = response.json()
         assert response_data.get("count"), "count не может быть None или отсутствовать"
@@ -140,7 +140,7 @@ class TestMovieAPI:
         assert "published" in any_movie
         assert any_movie.get("location"), "location не может быть пустым или отсутствовать"
 
-    def test_get_movies_list_with_page_size_and_location_filter(self, admin_api_manager, locations):
+    def test_get_movies_list_with_page_size_and_location_filter(self, admin_api_manager: ApiManager, locations):
         location = random.choice(locations)
         page_size = random.randint(5, 15)
 
@@ -156,7 +156,7 @@ class TestMovieAPI:
         for movie in movies:
             assert movie.get("location") == location
 
-    def test_delete_movie(self, admin_api_manager, test_movie):
+    def test_delete_movie(self, admin_api_manager: ApiManager, test_movie):
         response = admin_api_manager.movie_api.delete_movie(test_movie["id"])
         response_data = response.json()
 
@@ -168,25 +168,25 @@ class TestMovieAPI:
         response_data = response.json()
         assert response_data.get("message") == "Фильм не найден"
 
-    def test_cant_create_movie_without_name(self, admin_api_manager, test_movie_data):
+    def test_cant_create_movie_without_name(self, admin_api_manager: ApiManager, test_movie_data):
         del test_movie_data["name"]
         response = admin_api_manager.movie_api.create_movie(movie_data=test_movie_data, expected_status=400)
         response_data = response.json()
-        assert response_data('message'), "message должен быть в теле ответа и не может быть пустым"
+        assert response_data.get('message'), "message должен быть в теле ответа и не может быть пустым"
         assert "Поле name должно содержать не менее 3 символов" in response_data["message"]
         assert "Поле name должно быть строкой" in response_data["message"]
         assert "Поле name не может быть пустым" in response_data["message"]
         assert response_data.get("error") == "Bad Request"
         assert response_data.get("statusCode") == 400
 
-    def test_cant_delete_non_exists_movie(self, admin_api_manager):
+    def test_cant_delete_non_exists_movie(self, admin_api_manager: ApiManager):
         response = admin_api_manager.movie_api.delete_movie(movie_id=123456789, expected_status=404)
         response_data = response.json()
         assert response_data.get("message") == "Фильм не найден"
         assert response_data.get("error") == "Not Found"
         assert response_data.get("statusCode") == 404
 
-    def test_cant_get_delete_movie(self, admin_api_manager, test_movie):
+    def test_cant_get_delete_movie(self, admin_api_manager: ApiManager, test_movie):
         response = admin_api_manager.movie_api.delete_movie(test_movie["id"])
         response_data = response.json()
         assert response_data.get("id") == test_movie["id"]
