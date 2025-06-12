@@ -6,14 +6,21 @@ class AuthAPI(CustomRequester):
     def __init__(self, session, base_url=BASE_URL):
         super().__init__(session=session, base_url=base_url)
 
+
     def register_user(self, user_data, expected_status=201):
         return self.send_request(
-            method="POST", endpoint=REGISTER_ENDPOINT, data=user_data, expected_status=expected_status
+            method="POST",
+            endpoint=REGISTER_ENDPOINT,
+            data=user_data,
+            expected_status=expected_status
         )
 
     def login_user(self, login_data, expected_status=200):
         return self.send_request(
-            method="POST", endpoint=LOGIN_ENDPOINT, data=login_data, expected_status=expected_status
+            method="POST",
+            endpoint=LOGIN_ENDPOINT,
+            data=login_data,
+            expected_status=expected_status
         )
 
     def authenticate(self, user_creds):

@@ -19,17 +19,9 @@ class DataGenerator:
 
     @staticmethod
     def generate_random_password():
-        """Генерация пароля, соответствующего требованиям:
-        - Минимум 1 буква.
-        - Минимум 1 цифра.
-        - Допустимые символы.
-        - Длина от 8 до 20 символов.
-        """
-        # Гарантируем наличие хотя бы одной буквы и цифры
         letters = random.choice(string.ascii_letters)
         digits = random.choice(string.digits)
 
-        # Дополняем пароль случайными символами из допустимого набора
         special_chars = "?@#$%^&*|:"
         all_chars = string.ascii_letters + string.digits + special_chars
         remaining_length = random.randint(6, 18)

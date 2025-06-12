@@ -144,7 +144,7 @@ class TestMovieAPI:
         assert "published" in any_movie, "Отсутствует статус публикации у фильма"
         assert "location" in any_movie, "Отсутствует локация фильма"
 
-    def test_get_movies_list_with_pageSize_and_location_filter(self, admin_api_manager, locations):
+    def test_get_movies_list_with_page_size_and_location_filter(self, admin_api_manager, locations):
         location = random.choice(locations)
         page_size = random.randint(5, 15)
 
@@ -171,3 +171,33 @@ class TestMovieAPI:
         response = admin_api_manager.movie_api.get_movie(test_movie["id"], expected_status=404)
         response_data = response.json()
         assert response_data.get("message") == "Фильм не найден", "Сообщение ошибки не совпадает"
+
+    def test_cant_create_movie_without_name(self, admin_api_manager, test_movie_data):
+        del test_movie_data["name"]
+        response = admin_api_manager.movie_api.create_movie(movie_data=test_movie_data, expected_status=400)
+        response_data = response.json()
+        assert "message" in response_data, "Отсутствует message в ответе"
+        assert "Поле name должно содержать не менее 3 символов" in response_data["message"], "Отсутствует сообщение об ошибке"
+        assert "Поле name должно быть строкой" in response_data["message"], "Отсутствует сообщение об ошибке"
+        assert "Поле name не может быть пустым" in response_data["message"], "Отсутствует сообщение об ошибке"
+        assert response_data.get("error") == "Bad Request", "Расшифровка статус кода не совпадает"
+        assert response_data.get("statusCode") == 400, "Статус код в теле ответа не совпадает"
+
+    def test_cant_delete_non_exists_movie(self, admin_api_manager):
+        response = admin_api_manager.movie_api.delete_movie(movie_id=123456789, expected_status=404)
+        response_data = response.json()
+        assert response_data.get("message") == "Фильм не найден", "Сообщение об ошибки не совпадает"
+        assert response_data.get("error") == "Not Found", "Расшифровка статус-кода не совпадает"
+        assert response_data.get("statusCode") == 404, "Статус-код в теле ответа не совпадает"
+
+    def test_cant_get_delete_movie(self, admin_api_manager, test_movie):
+        response = admin_api_manager.movie_api.delete_movie(test_movie["id"])
+        response_data = response.json()
+        assert response_data.get("id") == test_movie["id"], "id фильма не совпадает"
+        assert response_data.get("name") == test_movie["name"], "Название фильма не совпадает"
+
+        response = admin_api_manager.movie_api.get_movie(test_movie["id"], expected_status=404)
+        response_data = response.json()
+        assert response_data.get("message") == "Фильм не найден", "Сообщение об ошибке не совпадает"
+        assert response_data.get("error") == "Not Found", "Расшифровка статус-кода не совпадает"
+        assert response_data.get("statusCode") == 404, "Статус-код в теле ответа не совпадает"

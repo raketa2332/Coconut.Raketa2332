@@ -19,6 +19,7 @@ class TestAuthAPI:
         login_data = {"email": registered_user["email"], "password": registered_user["password"]}
         response = api_manager.auth_api.login_user(login_data=login_data, expected_status=201)
         response_data = response.json()
+
         assert "accessToken" in response_data, "Токен доступа отсутствует в ответе"
         assert response_data["user"]["email"] == registered_user["email"], "Email не совпадает"
 
@@ -31,11 +32,11 @@ class TestAuthAPI:
         }
         response = api_manager.auth_api.login_user(login_data=login_data_with_invalid_passwd, expected_status=401)
         response_data = response.json()
+
         assert "accessToken" not in response_data, "В ответе присутствует токен аутентификации"
         assert "error" in response_data, "В ответе отсутствует сообщение об ошибке"
         assert response_data["error"] == "Unauthorized", "Текст ошибки не совпадает"
 
-        # Попытка логина с невалидным логином
         login_data_with_invalid_email = {
             "email": DataGenerator.generate_random_email(),
             "password": registered_user["password"],
@@ -46,7 +47,6 @@ class TestAuthAPI:
         assert "error" in response.json(), "Отсутствует сообщение об ошибке"
         assert response.json()["error"] == "Unauthorized", "Текст ошибки не совпадает"
 
-        # Попытка логина с пустым телом
         response = api_manager.auth_api.login_user(login_data={}, expected_status=401)
         response_data = response.json()
         assert "accessToken" not in response.json(), "В ответе присутствует Access Токен"
