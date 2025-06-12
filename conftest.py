@@ -1,3 +1,5 @@
+import random
+from http.client import responses
 
 import pytest
 import requests
@@ -11,7 +13,7 @@ from utils.data_generator import DataGenerator
 faker = Faker()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture()
 def test_user():
     random_email = DataGenerator.generate_random_email()
     random_name = DataGenerator.generate_random_name()
@@ -25,8 +27,7 @@ def test_user():
         "roles": ["USER"]
     }
 
-
-@pytest.fixture(scope='function')
+@pytest.fixture()
 def registered_user(requester, test_user):
     response = requester.send_request(
         method="POST",
@@ -39,12 +40,10 @@ def registered_user(requester, test_user):
     register_user["id"] = response_data["id"]
     return register_user
 
-
 @pytest.fixture()
 def requester():
     session = requests.Session()
     return CustomRequester(session=session, base_url=BASE_URL)
-
 
 @pytest.fixture()
 def auth_session(test_user):
@@ -68,22 +67,51 @@ def auth_session(test_user):
     session.headers.update({"Authorization": f"Bearer {token}"})
     return session
 
+@pytest.fixture()
+def test_genre():
+    return {"name": DataGenerator.generate_random_genre()}
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
+def random_genre(api_manager):
+    response = api_manager.movie_api.get_genres_list()
+    response_data = response.json()
+    return random.choice(response_data)
+
+@pytest.fixture()
+def locations():
+    return ["MSK", "SPB"]
+
+@pytest.fixture()
+def test_movie_data(random_genre, locations):
+    return {
+        "name": DataGenerator.generate_random_movie_title(),
+        "imageUrl": "https://example.com/image.png",
+        "price": faker.random_int(min=1, max=10000),
+        "description": DataGenerator.generate_random_movie_description(),
+        "location": random.choice(locations),
+        "published": faker.boolean(),
+        "genreId": random_genre.get("id")
+    }
+@pytest.fixture()
+def test_movie(admin_api_manager,test_movie_data):
+        response = admin_api_manager.movie_api.create_movie(test_movie_data)
+        response_data = response.json()
+        assert "id" in response_data, "id фильма отсутствует"
+        assert response_data.get("name") == test_movie_data["name"], "Название фильма не совпадает"
+        assert response_data.get("genreId") == test_movie_data["genreId"], "id жанра не совпадает"
+        return response_data
+
+@pytest.fixture(scope="class")
 def session():
     http_session = requests.Session()
     yield http_session
     http_session.close()
 
-@pytest.fixture()
-def test_genre():
-    return {"name": DataGenerator.generate_random_genre()}
-
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def api_manager(session):
     return ApiManager(session)
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def admin_api_manager(api_manager):
     api_manager.auth_api.authenticate((SUPER_ADMIN_LOGIN, SUPER_ADMIN_PASSWORD))
     return api_manager
