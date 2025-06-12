@@ -1,5 +1,7 @@
 import os
+
 from dotenv import load_dotenv
+
 
 load_dotenv()
 
@@ -11,10 +13,7 @@ REGISTER_ENDPOINT = "/register"
 GENRE_ENDPOINT = "/genres"
 MOVIE_ENDPOINT = "/movies"
 
-HEADERS = {
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-}
+HEADERS = {"Content-Type": "application/json", "Accept": "application/json"}
 
 SUPER_ADMIN_LOGIN = os.environ["SUPER_ADMIN_LOGIN"]
 SUPER_ADMIN_PASSWORD = os.environ["SUPER_ADMIN_PASSWORD"]

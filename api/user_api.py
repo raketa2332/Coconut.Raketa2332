@@ -7,15 +7,7 @@ class UserAPI(CustomRequester):
         super().__init__(session=session, base_url=BASE_URL)
 
     def get_user_info(self, user_id, expected_status=201):
-        return self.send_request(
-            method="GET",
-            endpoint=f"/user/{user_id}",
-            expected_status=expected_status
-        )
+        return self.send_request(method="GET", endpoint=f"/user/{user_id}", expected_status=expected_status)
 
     def delete_user(self, user_id, expected_status=204):
-        return self.send_request(
-            method="DELETE",
-            endpoint=f"/user/{user_id}",
-            expected_status=expected_status
-        )
+        return self.send_request(method="DELETE", endpoint=f"/user/{user_id}", expected_status=expected_status)

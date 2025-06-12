@@ -1,17 +1,12 @@
 import math
-from multiprocessing.context import assert_spawning
-from unittest import defaultTestLoader
-
-from api.api_manager import ApiManager
-from constant import SUPER_ADMIN_LOGIN, SUPER_ADMIN_PASSWORD
 import random
 
+from api.api_manager import ApiManager
 from utils.data_generator import DataGenerator
 
 
 class TestGenreAPI:
     def test_create_genre(self, admin_api_manager: ApiManager, test_genre):
-
         response = admin_api_manager.movie_api.create_genre(test_genre)
         response_data = response.json()
         assert "id" in response_data, "Отсутствует id жанра в ответе"
@@ -21,10 +16,9 @@ class TestGenreAPI:
         response = admin_api_manager.movie_api.get_genre(genre_id)
         response_data = response.json()
         assert response_data.get("id") == genre_id, "Отличается id жанра"
-        assert response_data.get("name") ==test_genre["name"]
+        assert response_data.get("name") == test_genre["name"]
 
     def test_delete_genre(self, admin_api_manager: ApiManager, test_genre):
-
         response = admin_api_manager.movie_api.create_genre(test_genre)
         genre_id = response.json().get("id")
 
@@ -49,8 +43,12 @@ class TestGenreAPI:
         response = admin_api_manager.movie_api.create_genre({"name": " "}, expected_status=400)
         response_data = response.json()
         assert "message" in response_data, "Отсутствует поле message"
-        assert "Поле name должно содержать не менее 3 символов" in response_data["message"], "Отсутствует сообщение об ошибке"
-        assert "Поле name не может содержать пробелы в начале или в конце" in response_data["message"], "Отсутствует сообщение об ошибке"
+        assert "Поле name должно содержать не менее 3 символов" in response_data["message"], (
+            "Отсутствует сообщение об ошибке"
+        )
+        assert "Поле name не может содержать пробелы в начале или в конце" in response_data["message"], (
+            "Отсутствует сообщение об ошибке"
+        )
         assert response_data.get("error") == "Bad Request", "Расшифровка статус кода не совпадает"
         assert response_data.get("statusCode") == 400, "Статус код в теле ответа не совпадает"
 
@@ -58,24 +56,26 @@ class TestGenreAPI:
         response = admin_api_manager.movie_api.create_genre({"name": "ff"}, expected_status=400)
         response_data = response.json()
         assert "message" in response_data, "Отсутствует поле message"
-        assert "Поле name должно содержать не менее 3 символов" in response_data["message"], " Отсутствует сообщение об ошибке"
+        assert "Поле name должно содержать не менее 3 символов" in response_data["message"], (
+            " Отсутствует сообщение об ошибке"
+        )
         assert response_data.get("error") == "Bad Request", "Расшифровка статус кода не совпадает"
         assert response_data.get("statusCode") == 400, "Статус код в теле ответа не совпадает"
 
-    def test_cant_create_genre_if_name_already_exists (self, admin_api_manager, test_genre):
+    def test_cant_create_genre_if_name_already_exists(self, admin_api_manager, test_genre):
         response = admin_api_manager.movie_api.create_genre(test_genre)
         response_data = response.json()
         assert "id" in response_data, "Отсутствует id жанра"
         assert "name" in response_data, "Отсутствует название жанра"
 
-        response = admin_api_manager.movie_api.create_genre(test_genre,expected_status=409)
+        response = admin_api_manager.movie_api.create_genre(test_genre, expected_status=409)
         response_data = response.json()
         assert response_data.get("message") == "Такой жанр уже существует", "Сообщение об ошибке не совпадает"
         assert response_data.get("error") == "Conflict", "Расшифровка статус кода не совпадает"
         assert response_data.get("statusCode") == 409, "Статус код в теле не совпадает"
 
-class TestMovieAPI:
 
+class TestMovieAPI:
     def test_create_movie(self, admin_api_manager, test_movie_data):
         response = admin_api_manager.movie_api.create_movie(test_movie_data)
         response_data = response.json()
@@ -103,7 +103,6 @@ class TestMovieAPI:
         assert response_data.get("genreId") == test_movie_data["genreId"], "Название жанра не совпадает"
 
     def test_edit_movie(self, admin_api_manager, test_movie_data, random_genre):
-
         response = admin_api_manager.movie_api.create_movie(test_movie_data)
         response_data = response.json()
         assert "id" in response_data, "Отсутствует id фильма"
@@ -114,7 +113,7 @@ class TestMovieAPI:
         new_data = {
             "name": DataGenerator.generate_random_movie_title(),
             "genreId": random_genre["id"],
-            "price": random.randint(1,10000)
+            "price": random.randint(1, 10000),
         }
 
         response = admin_api_manager.movie_api.edit_movie(movie_id, new_data)
@@ -133,7 +132,9 @@ class TestMovieAPI:
         assert "count" in response_data, "count отсутствует в ответе"
         assert response_data.get("page") == 1, "Некорректная страница в ответе"
         assert response_data.get("pageSize") == 10, "Кол-во фильмов на одной странице не совпадает"
-        assert response_data.get("pageCount") == math.ceil(response_data.get("count") / response_data.get("pageSize")), "Общее кол-во страниц не совпадает"
+        assert response_data.get("pageCount") == math.ceil(
+            response_data.get("count") / response_data.get("pageSize")
+        ), "Общее кол-во страниц не совпадает"
         assert "movies" in response_data, "movies отсутствует в ответе"
 
         any_movie = random.choice(response_data["movies"])
@@ -145,13 +146,15 @@ class TestMovieAPI:
 
     def test_get_movies_list_with_pageSize_and_location_filter(self, admin_api_manager, locations):
         location = random.choice(locations)
-        page_size = random.randint(5,15)
+        page_size = random.randint(5, 15)
 
         response = admin_api_manager.movie_api.get_movie_list(pageSize=page_size, locations=location)
         response_data = response.json()
         assert "movies" in response_data, "movies отсутствует в ответе"
         assert response_data.get("pageSize") == page_size, "Кол-во фильмов на странице не совпадает"
-        assert response_data.get("pageCount") == math.ceil(response_data.get("count") / response_data.get("pageSize")), "Общее кол-во страниц не совпадает"
+        assert response_data.get("pageCount") == math.ceil(
+            response_data.get("count") / response_data.get("pageSize")
+        ), "Общее кол-во страниц не совпадает"
 
         movies = response_data.get("movies")
         for movie in movies:
@@ -168,4 +171,3 @@ class TestMovieAPI:
         response = admin_api_manager.movie_api.get_movie(test_movie["id"], expected_status=404)
         response_data = response.json()
         assert response_data.get("message") == "Фильм не найден", "Сообщение ошибки не совпадает"
-

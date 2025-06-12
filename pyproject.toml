@@ -1,0 +1,34 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 120  # просто для справки, Ruff Formatter может использовать это
+
+[tool.ruff.lint]
+select = [
+  "E", "F", "B", "I", "UP", "N", "C90", "D", "W"
+]
+ignore = [
+  "E501",  # длина строки
+  "D100", "D101", "D102", "D104"
+]
+exclude = [
+  ".git",
+  "__pycache__",
+  "venv",
+  ".venv",
+  "migrations",
+  "build",
+  "dist"
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["your_project"]
+combine-as-imports = true
+lines-after-imports = 2
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

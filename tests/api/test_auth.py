@@ -6,8 +6,7 @@ from utils.data_generator import DataGenerator
 
 class TestAuthAPI:
     def test_registration_user(self, api_manager: ApiManager, test_user):
-        """Тест регистрации пользователя
-        """
+        """Тест регистрации пользователя"""
         response = api_manager.auth_api.register_user(test_user)
         response_data = response.json()
         assert response_data["email"] == test_user["email"], "Email не совпадает"
@@ -16,24 +15,19 @@ class TestAuthAPI:
         assert "USER" in response_data["roles"], "Роль USER должна быть у пользователя"
 
     def test_register_and_login_user(self, api_manager: ApiManager, registered_user):
-        """Тест на регистрацию и авторизацию пользователя
-        """
-        login_data = {
-            "email": registered_user["email"],
-            "password": registered_user["password"]
-        }
+        """Тест на регистрацию и авторизацию пользователя"""
+        login_data = {"email": registered_user["email"], "password": registered_user["password"]}
         response = api_manager.auth_api.login_user(login_data=login_data, expected_status=201)
         response_data = response.json()
         assert "accessToken" in response_data, "Токен доступа отсутствует в ответе"
         assert response_data["user"]["email"] == registered_user["email"], "Email не совпадает"
 
     @pytest.mark.xfail(reason="Знаем о том, что не тот статус код")
-    def test_auth_user_with_invalid_creds(self, api_manager : ApiManager, registered_user):
-
+    def test_auth_user_with_invalid_creds(self, api_manager: ApiManager, registered_user):
         # Попытка логина с невалидным паролем
         login_data_with_invalid_passwd = {
             "email": registered_user["email"],
-            "password": DataGenerator.generate_random_password()
+            "password": DataGenerator.generate_random_password(),
         }
         response = api_manager.auth_api.login_user(login_data=login_data_with_invalid_passwd, expected_status=401)
         response_data = response.json()
@@ -44,7 +38,7 @@ class TestAuthAPI:
         # Попытка логина с невалидным логином
         login_data_with_invalid_email = {
             "email": DataGenerator.generate_random_email(),
-            "password": registered_user["password"]
+            "password": registered_user["password"],
         }
         response = api_manager.auth_api.login_user(login_data=login_data_with_invalid_email, expected_status=401)
         response_data = response.json()

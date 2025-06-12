@@ -4,24 +4,18 @@ import os
 
 
 class CustomRequester:
-    """Кастомный реквестер для стандартизации и упрощения HTTP-запросов.
-    """
+    """Кастомный реквестер для стандартизации и упрощения HTTP-запросов."""
 
-    base_headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    }
+    base_headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
     def __init__(self, session, base_url):
-
         self.session = session
         self.base_url = base_url
         self.headers = self.base_headers.copy()
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
 
-    def send_request(self, method, endpoint,params=None, data=None, expected_status=200, need_logging=True):
-
+    def send_request(self, method, endpoint, params=None, data=None, expected_status=200, need_logging=True):
         url = f"{self.base_url}{endpoint}"
         response = self.session.request(method=method, url=url, json=data, headers=self.headers, params=params)
 
@@ -40,24 +34,22 @@ class CustomRequester:
     def log_request_and_response(self, response):
         try:
             request = response.request
-            GREEN = '\033[32m'
-            RED = '\033[31m'
-            RESET = '\033[0m'
+            GREEN = "\033[32m"
+            RED = "\033[31m"
+            RESET = "\033[0m"
             headers = "\\\n".join([f"-H'{header}: {value}'" for header, value in request.headers.items()])
             full_test_name = f"pytest {os.environ.get('PYTEST_CURRENT_TEST', '').replace('(call)', '')}"
 
             body = ""
-            if hasattr(request, 'body') and request.body is not None:
+            if hasattr(request, "body") and request.body is not None:
                 if isinstance(request.body, bytes):
-                    body = request.body.decode('utf-8')
-                body = f"-d '{body}' \n" if body != '{}' else ''
+                    body = request.body.decode("utf-8")
+                body = f"-d '{body}' \n" if body != "{}" else ""
 
             # Логируем запрос
             self.logger.info(f"\n{'=' * 40} REQUEST {'=' * 40}")
             self.logger.info(
-                f"{GREEN}{full_test_name}{RESET}\n"
-                f"curl -X {request.method} '{request.url}'"
-                f"{headers} \\\n"                f"{body}"
+                f"{GREEN}{full_test_name}{RESET}\ncurl -X {request.method} '{request.url}'{headers} \\\n{body}"
             )
 
             # Обрабатываем ответ
@@ -74,15 +66,9 @@ class CustomRequester:
             # Логируем ответ
             self.logger.info(f"\n{'=' * 40} RESPONSE {'=' * 40}")
             if not is_success:
-                self.logger.info(
-                    f"\nSTATUS_CODE: {RED}{response_status}{RESET}"
-                    f"\nDATA: {RED}{response_data}{RESET}"
-                )
+                self.logger.info(f"\nSTATUS_CODE: {RED}{response_status}{RESET}\nDATA: {RED}{response_data}{RESET}")
             else:
-                self.logger.info(
-                    f"\nSTATUS_CODE: {GREEN}{response_status}{RESET}"
-                    f"\nDATA:\n{response_data}"
-                )
+                self.logger.info(f"\nSTATUS_CODE: {GREEN}{response_status}{RESET}\nDATA:\n{response_data}")
 
             self.logger.info(f"{'=' * 80}\n")
         except Exception as e:
