@@ -1,4 +1,3 @@
-import pytest
 
 from api.api_manager import ApiManager
 from utils.data_generator import DataGenerator
@@ -15,7 +14,6 @@ class TestAuthAPI:
         assert "USER" in response_data["roles"], "Роль USER должна быть у пользователя"
 
     def test_register_and_login_user(self, api_manager: ApiManager, registered_user):
-        """Тест на регистрацию и авторизацию пользователя"""
         login_data = {
             "email": registered_user["email"],
             "password": registered_user["password"]
