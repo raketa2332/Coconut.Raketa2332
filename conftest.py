@@ -107,14 +107,14 @@ def test_movie(super_admin: User, test_movie_data: dict) -> dict:
     return response_data
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="function")
 def session():
     http_session = requests.Session()
     yield http_session
     http_session.close()
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="function")
 def api_manager(session):
     return ApiManager(session)
 
