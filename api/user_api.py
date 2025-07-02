@@ -14,10 +14,18 @@ class UserAPI(CustomRequester):
             endpoint=f"/user/{user_locator}",
             expected_status=expected_status)
 
-    def create_user(self, user_data, expected_status=201):
+    def create_user(self, user_data: dict, expected_status: int = 201):
         return self.send_request(
             method="POST",
             endpoint="/user",
             data=user_data,
+            expected_status=expected_status
+        )
+
+    def update_user(self, user_id: str, data: dict, expected_status: int = 200):
+        return self.send_request(
+            method="PATCH",
+            endpoint=f"/user/{user_id}",
+            data=data,
             expected_status=expected_status
         )

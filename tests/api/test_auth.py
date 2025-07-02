@@ -5,10 +5,10 @@ from utils.data_generator import DataGenerator
 
 class TestAuthAPI:
     def test_registration_user(self, api_manager: ApiManager, test_user):
-        """Тест регистрации пользователя"""
-        response = api_manager.auth_api.register_user(test_user)
+        data = test_user()
+        response = api_manager.auth_api.register_user(data)
         response_data = response.json()
-        assert response_data["email"] == test_user["email"], "Email не совпадает"
+        assert response_data["email"] == data["email"], "Email не совпадает"
         assert "id" in response_data, "ID пользователя отсутствует в ответе"
         assert "roles" in response_data, "Роли пользователя отсутствуют в ответе"
         assert "USER" in response_data["roles"], "Роль USER должна быть у пользователя"

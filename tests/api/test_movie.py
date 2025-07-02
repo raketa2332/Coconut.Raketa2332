@@ -159,28 +159,19 @@ class TestMovieAPI:
         for movie in movies:
             assert movie.get("location") == location
 
-    @pytest.mark.parametrize("role_name,expected_status, new_movie", [
-        ("super_admin", 200, "test_movie"),
-        ("admin", 403, "test_movie"),
-        ("common_user", 403, "test_movie")
+    @pytest.mark.parametrize("role_name,expected_status", [
+        ("common_user", 403),
+        ("admin", 200),
+        ("super_admin", 200)
     ])
-    def test_delete_movie(self, request, role_name, expected_status, new_movie):
-        movie = request.getfixturevalue(new_movie)
-        role = request.getfixturevalue(role_name)
-        if expected_status == 200:
-            response = role.api.movie_api.delete_movie(movie["id"], expected_status=expected_status)
-        elif expected_status == 403:
-            response = role.api.movie_api.delete_movie(movie["id"], expected_status=expected_status)
+    def test_delete_movie(self, request, role_name, expected_status, test_movie):
+        role: User = request.getfixturevalue(role_name)
 
-        # response = super_admin.api.movie_api.delete_movie(test_movie["id"]).json()
-        # assert response.get("id") == test_movie["id"]
-        # assert response.get("genreId") == test_movie["genreId"]
-        # assert response.get("price") == test_movie["price"]
-        # assert response.get("description") == test_movie["description"]
-        #
-        # response = super_admin.api.movie_api.get_movie(test_movie["id"], expected_status=404).json()
-        # assert response.get("message") == "Фильм не найден"
-        # assert response.get("error") == "Not Found"
+        response = role.api.movie_api.delete_movie(test_movie["id"], expected_status=expected_status)
+        if expected_status == 200:
+            pass
+        elif expected_status == 403:
+            pass
 
     def test_cant_create_movie_without_name(self, super_admin: User, test_movie_data):
         del test_movie_data["name"]

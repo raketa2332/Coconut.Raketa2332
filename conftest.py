@@ -18,24 +18,27 @@ faker = Faker()
 
 @pytest.fixture(scope="function")
 def test_user():
-    random_email = DataGenerator.generate_random_email()
-    random_name = DataGenerator.generate_random_name()
-    random_password = DataGenerator.generate_random_password()
+    def _test_user():
+        random_email = DataGenerator.generate_random_email()
+        random_name = DataGenerator.generate_random_name()
+        random_password = DataGenerator.generate_random_password()
 
-    return {
-        "email": random_email,
-        "fullName": random_name,
-        "password": random_password,
-        "passwordRepeat": random_password,
-        "roles": ["USER"],
-    }
+        return {
+            "email": random_email,
+            "fullName": random_name,
+            "password": random_password,
+            "passwordRepeat": random_password,
+            "roles": [Roles.USER.value],
+        }
+    return _test_user
 
 
 @pytest.fixture(scope="function")
 def registered_user(requester, test_user):
-    response = requester.send_request(method="POST", endpoint=REGISTER_ENDPOINT, data=test_user, expected_status=201)
+    data = test_user()
+    response = requester.send_request(method="POST", endpoint=REGISTER_ENDPOINT, data=data, expected_status=201)
     response_data = response.json()
-    register_user = test_user.copy()
+    register_user = data.copy()
     register_user["id"] = response_data["id"]
     return register_user
 
@@ -49,11 +52,11 @@ def requester():
 @pytest.fixture(scope="function")
 def auth_session(test_user):
     register_url = f"{BASE_URL}{REGISTER_ENDPOINT}"
-    response = requests.post(url=register_url, json=test_user, headers=HEADERS)
+    response = requests.post(url=register_url, json=test_user(), headers=HEADERS)
     assert response.status_code == 201, "Ошибка рeгистрации"
 
     login_url = f"{BASE_URL}{LOGIN_ENDPOINT}"
-    login_data = {"email": test_user["email"], "password": test_user["password"]}
+    login_data = {"email": test_user()["email"], "password": test_user()["password"]}
     response = requests.post(url=login_url, json=login_data, headers=HEADERS)
     assert response.status_code == 200, "Ошибка авторизации"
 
@@ -134,6 +137,7 @@ def user_session():
     for user in user_pool:
         user.close_session()
 
+
 @pytest.fixture(scope="function")
 def super_admin(user_session):
     new_session = user_session()
@@ -151,7 +155,7 @@ def super_admin(user_session):
 
 @pytest.fixture(scope="function")
 def creation_user_data(test_user):
-    update_data = test_user.copy()
+    update_data = test_user().copy()
     update_data.update({
         "verified": True,
         "banned": False
@@ -186,7 +190,8 @@ def admin(user_session, super_admin, creation_user_data):
         new_session
     )
 
-    super_admin.api.user_api.create_user(admin)
+    response = super_admin.api.user_api.create_user(creation_user_data).json()
+    user_id = response["id"]
+    super_admin.api.user_api.update_user(user_id=user_id, data={"roles": [Roles.ADMIN.value]})
     admin.api.auth_api.authenticate(admin.creds)
     return admin
-
