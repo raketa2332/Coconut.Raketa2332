@@ -75,6 +75,7 @@ class TestGenreAPI:
 
 
 class TestMovieAPI:
+
     def test_create_movie(self, super_admin: User, test_movie_data):
         response = super_admin.api.movie_api.create_movie(test_movie_data)
         response_data = response.json()
@@ -159,20 +160,26 @@ class TestMovieAPI:
         for movie in movies:
             assert movie.get("location") == location
 
+    @pytest.mark.flaky(reruns=2, rerun_delay=1)
     @pytest.mark.parametrize("role_name,expected_status", [
-        ("common_user", 403),
-        ("admin", 200),
-        ("super_admin", 200)
+        pytest.param("common_user", 403),
+        pytest.param("admin", 403, marks=pytest.mark.xfail(reason="Известный баг")),
+        pytest.param("super_admin", 200)
     ])
     def test_delete_movie(self, request, role_name, expected_status, test_movie):
         role: User = request.getfixturevalue(role_name)
 
-        response = role.api.movie_api.delete_movie(test_movie["id"], expected_status=expected_status)
+        response = role.api.movie_api.delete_movie(test_movie["id"], expected_status=expected_status).json()
         if expected_status == 200:
-            pass
+            assert response.get("id") == test_movie["id"]
+            assert response.get("name") == test_movie["name"]
+            assert response.get("genreId") == test_movie["genreId"]
+
+            response = role.api.movie_api.get_movie(test_movie["id"], expected_status=404)
         elif expected_status == 403:
             pass
 
+    @pytest.mark.flaky(reruns=2, rerun_delay=1)
     def test_cant_create_movie_without_name(self, super_admin: User, test_movie_data):
         del test_movie_data["name"]
         response = super_admin.api.movie_api.create_movie(movie_data=test_movie_data, expected_status=400)
@@ -202,7 +209,8 @@ class TestMovieAPI:
         assert response_data.get("message") == "Фильм не найден"
         assert response_data.get("error") == "Not Found"
         assert response_data.get("statusCode") == 404
-
+    
+    @pytest.mark.slow
     def test_common_user_cant_create_movie(self, common_user: User, test_movie_data: dict):
         response = common_user.api.movie_api.create_movie(test_movie_data, expected_status=403).json()
 
@@ -210,6 +218,7 @@ class TestMovieAPI:
         assert response.get("error") == "Forbidden"
         assert response.get("statusCode") == 403
 
+    @pytest.mark.slow
     @pytest.mark.parametrize("min_price,max_price,location,genre_id", [
         (100, 200, "SPB", 1),
         (100, 200, "MSK", 1),

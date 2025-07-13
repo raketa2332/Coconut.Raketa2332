@@ -9,6 +9,7 @@ from constants.constant import BASE_URL, HEADERS, LOGIN_ENDPOINT, REGISTER_ENDPO
 from constants.roles import Roles
 from custom_requester.custom_requester import CustomRequester
 from entities.user import User
+from models.registration_user import RegistrationUserDTO
 from resources.user_creds import SuperAdminCreds
 from utils.data_generator import DataGenerator
 
@@ -18,7 +19,7 @@ faker = Faker()
 
 @pytest.fixture(scope="function")
 def test_user():
-    def _test_user():
+    def _test_user() -> RegistrationUserDTO:
         random_email = DataGenerator.generate_random_email()
         random_name = DataGenerator.generate_random_name()
         random_password = DataGenerator.generate_random_password()
