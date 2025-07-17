@@ -166,7 +166,7 @@ class TestMovieAPI:
         pytest.param("admin", 403, marks=pytest.mark.xfail(reason="Известный баг")),
         pytest.param("super_admin", 200)
     ])
-    def test_delete_movie(self, request, role_name, expected_status, test_movie):
+    def test_delete_movie(self, request, role_name: str, expected_status: int, test_movie):
         role: User = request.getfixturevalue(role_name)
 
         response = role.api.movie_api.delete_movie(test_movie["id"], expected_status=expected_status).json()

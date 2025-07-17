@@ -32,7 +32,7 @@ def registration_user_data():
 
 @pytest.fixture(scope="function")
 def test_user():
-    def _test_user():
+    def _test_user() -> "RegistrationRequest":
         random_password = DataGenerator.generate_random_password()
 
         return RegistrationRequest(
@@ -47,11 +47,14 @@ def test_user():
 
 @pytest.fixture(scope="function")
 def registered_user(requester, test_user):
-    data = test_user()
-    response = requester.send_request(method="POST", endpoint=REGISTER_ENDPOINT, data=data, expected_status=201)
-    response_data = response.json()
+    data = test_user().model_dump(by_alias=True,exclude_unset=True)
+    response = requester.send_request(
+        method="POST",
+        endpoint=REGISTER_ENDPOINT,
+        data=data,
+        expected_status=201).json()
     register_user = data.copy()
-    register_user["id"] = response_data["id"]
+    register_user["id"] = response.get("id")
     return register_user
 
 
@@ -166,27 +169,27 @@ def super_admin(user_session):
 
 
 @pytest.fixture(scope="function")
-def creation_user_data(test_user):
-    update_data = test_user().model_copy()
+def creation_user_data(test_user) -> RegistrationRequest:
+    update_data = test_user().model_dump(by_alias=True, exclude_unset=False)
     update_data.update({
         "verified": True,
         "banned": False
     })
-    return update_data
+    return RegistrationRequest(**update_data)
 
 
 @pytest.fixture(scope="function")
-def common_user(user_session, super_admin, creation_user_data):
+def common_user(user_session, super_admin, creation_user_data: RegistrationRequest) -> User:
     new_session = user_session()
 
     common_user = User(
-        creation_user_data['email'],
-        creation_user_data['password'],
-        [Roles.USER.value],
+        creation_user_data.email,
+        creation_user_data.password,
+        creation_user_data.roles,
         new_session
     )
 
-    super_admin.api.user_api.create_user(creation_user_data)
+    super_admin.api.user_api.create_user(creation_user_data.model_dump(by_alias=True, exclude_unset=False))
     common_user.api.auth_api.authenticate(common_user.creds)
     return common_user
 
