@@ -9,7 +9,7 @@ from constants.constant import BASE_URL, HEADERS, LOGIN_ENDPOINT, REGISTER_ENDPO
 from constants.roles import Roles
 from custom_requester.custom_requester import CustomRequester
 from entities.user import User
-from models.registration_user import RegistrationUserDTO
+from models.registration_request import RegistrationRequest
 from resources.user_creds import SuperAdminCreds
 from utils.data_generator import DataGenerator
 
@@ -18,19 +18,30 @@ faker = Faker()
 
 
 @pytest.fixture(scope="function")
+def registration_user_data():
+    random_password = DataGenerator.generate_random_password()
+
+    return RegistrationRequest(
+        email = DataGenerator.generate_random_email(),
+        fullName = DataGenerator.generate_random_name(),
+        password = random_password,
+        passwordRepeat = random_password,
+        roles = [Roles.USER.value]
+    )
+
+
+@pytest.fixture(scope="function")
 def test_user():
-    def _test_user() -> RegistrationUserDTO:
-        random_email = DataGenerator.generate_random_email()
-        random_name = DataGenerator.generate_random_name()
+    def _test_user():
         random_password = DataGenerator.generate_random_password()
 
-        return {
-            "email": random_email,
-            "fullName": random_name,
-            "password": random_password,
-            "passwordRepeat": random_password,
-            "roles": [Roles.USER.value],
-        }
+        return RegistrationRequest(
+            email=DataGenerator.generate_random_email(),
+            fullName=DataGenerator.generate_random_name(),
+            password=random_password,
+            passwordRepeat=random_password,
+            roles=[Roles.USER.value]
+        )
     return _test_user
 
 
@@ -156,7 +167,7 @@ def super_admin(user_session):
 
 @pytest.fixture(scope="function")
 def creation_user_data(test_user):
-    update_data = test_user().copy()
+    update_data = test_user().model_copy()
     update_data.update({
         "verified": True,
         "banned": False
