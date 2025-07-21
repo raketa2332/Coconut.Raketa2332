@@ -1,11 +1,10 @@
-from constant import BASE_URL, LOGIN_ENDPOINT, REGISTER_ENDPOINT
+from constants.constant import BASE_URL, LOGIN_ENDPOINT, REGISTER_ENDPOINT
 from custom_requester.custom_requester import CustomRequester
 
 
 class AuthAPI(CustomRequester):
     def __init__(self, session, base_url=BASE_URL):
         super().__init__(session=session, base_url=base_url)
-
 
     def register_user(self, user_data, expected_status=201):
         return self.send_request(
