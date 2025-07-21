@@ -9,7 +9,8 @@ from constants.constant import BASE_URL, HEADERS, LOGIN_ENDPOINT, REGISTER_ENDPO
 from constants.roles import Roles
 from custom_requester.custom_requester import CustomRequester
 from entities.user import User
-from models.registration_request import RegistrationRequest
+
+from models.base_models import TestUser
 from resources.user_creds import SuperAdminCreds
 from utils.data_generator import DataGenerator
 
@@ -21,7 +22,7 @@ faker = Faker()
 def registration_user_data():
     random_password = DataGenerator.generate_random_password()
 
-    return RegistrationRequest(
+    return TestUser(
         email = DataGenerator.generate_random_email(),
         fullName = DataGenerator.generate_random_name(),
         password = random_password,
@@ -32,10 +33,10 @@ def registration_user_data():
 
 @pytest.fixture(scope="function")
 def test_user():
-    def _test_user() -> "RegistrationRequest":
+    def _test_user() -> "TestUser":
         random_password = DataGenerator.generate_random_password()
 
-        return RegistrationRequest(
+        return TestUser(
             email=DataGenerator.generate_random_email(),
             fullName=DataGenerator.generate_random_name(),
             password=random_password,
@@ -169,17 +170,17 @@ def super_admin(user_session):
 
 
 @pytest.fixture(scope="function")
-def creation_user_data(test_user) -> RegistrationRequest:
+def creation_user_data(test_user) -> TestUser:
     update_data = test_user().model_dump(by_alias=True, exclude_unset=False)
     update_data.update({
         "verified": True,
         "banned": False
     })
-    return RegistrationRequest(**update_data)
+    return TestUser(**update_data)
 
 
 @pytest.fixture(scope="function")
-def common_user(user_session, super_admin, creation_user_data: RegistrationRequest) -> User:
+def common_user(user_session, super_admin, creation_user_data: TestUser) -> User:
     new_session = user_session()
 
     common_user = User(
