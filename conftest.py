@@ -1,3 +1,4 @@
+import datetime
 import random
 
 import pytest
@@ -8,6 +9,7 @@ from api.api_manager import ApiManager
 from constants.constant import BASE_URL, HEADERS, LOGIN_ENDPOINT, REGISTER_ENDPOINT, SUPER_ADMIN_LOGIN, SUPER_ADMIN_PASSWORD
 from constants.roles import Roles
 from custom_requester.custom_requester import CustomRequester
+from db_requester.models import UserDBModel
 from entities.user import User
 
 from models.base_models import TestUser
@@ -24,14 +26,32 @@ load_dotenv()
 
 faker = Faker()
 
-engine = create_engine(f"postgresql+psycopg2://{os.environ["USERNAME"]}:{os.environ["PASSWORD"]}@{os.environ["HOST"]}:{os.environ["PORT"]}/{os.environ['DATABASE_NAME']}")
+engine = create_engine(f"postgresql+psycopg2://{os.getenv("DB_USERNAME")}:{os.getenv("PASSWORD")}@{os.getenv("HOST")}:{os.getenv("PORT")}/{os.getenv("DB_NAME")}")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(scope="module")
 def db_session():
-    db_session = SessionLocal()
-    yield db_session
-    db_session.close()
+    session = SessionLocal()
+
+    test_user = UserDBModel(
+        id="test_id_by_raketa2332",
+        email=DataGenerator.generate_random_email(),
+        full_name=DataGenerator.generate_random_name(),
+        password=DataGenerator.generate_random_password(),
+        created_at=datetime.datetime.now(),
+        updated_at=datetime.datetime.now(),
+        verified=False,
+        banned=False,
+        roles="{USER}"
+    )
+
+    session.add(test_user)
+    session.commit()
+
+    yield session
+    session.delete(test_user)
+    session.commit()
+    session.close()
 
 
 @pytest.fixture(scope="function")

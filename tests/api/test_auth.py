@@ -1,15 +1,22 @@
+from sqlalchemy.orm import Session
 
 from api.api_manager import ApiManager
+from conftest import registration_user_data
+from db_requester.models import UserDBModel
 from entities.user import User
 from models.base_models import RegisterUserResponse
 from utils.data_generator import DataGenerator
 
 
 class TestAuthAPI:
-    def test_registration_user(self, api_manager: ApiManager, registration_user_data):
+    def test_registration_user(self, api_manager: ApiManager, registration_user_data, db_session: Session):
         response = api_manager.auth_api.register_user(user_data=registration_user_data)
         register_user_response = RegisterUserResponse(**response.json())
-        assert register_user_response.email == registration_user_data.email, "Email не совпадает"
+
+        user_from_db = db_session.query(UserDBModel).filter(UserDBModel.id == register_user_response.id)
+        assert user_from_db.count() == 1, "User не попал в базу данных"
+        user_from_db = user_from_db.first()
+        assert user_from_db.email == registration_user_data.email
 
     def test_register_and_login_user(self, api_manager: ApiManager, registered_user):
         login_data = {
